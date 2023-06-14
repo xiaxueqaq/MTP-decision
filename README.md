@@ -31,4 +31,7 @@ $$(\forall x)\left(\left(\left(x^2\cos x-\sin x=0\right)\wedge \left(x>0\right)\
 
 Call `DecideMTP[((b1 == 0) \[And] (b2 > 0)) \[Implies] (b3 > 0), {b1, b2, b3}, {x^2 Cos[x] - Sin[x], x, x - 1}, x]`, and the function returns `True`.
 
+Another example is from the National College Entrance Examination 2023 (NCEE2023) in China. Problem 22 asks students to prove when $0<x<1$, we have $x-x^2<\sin x<x$. This can be shown by our decision procedure with the call:
+`DecideMTP[((b1 > 0) \[And] (b2 < 0)) \[Implies] ((b3 > 0) \[And] (b4 < 0)), {b1, b2, b3, b4}, {x, x - 1, Sin[x] - x + x^2,  Sin[x] - x}, x]`, which returns `True` in 0.125s.
+
 The notebook `UnivariateMTPDecisionV2-Timing.nb` contains all examples in the paper.
