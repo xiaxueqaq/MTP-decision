@@ -1,5 +1,7 @@
 # MTP-decision
-This project provides a decision algorithm to the first-order theory of univariate MTPs. The implementation is based on MATHEMATICA 12.
+This project provides a decision algorithm to the first-order theory of univariate MTPs. The implementation is based on MATHEMATICA 12. 
+
+You can find our paper at [[ISSAC' 23, Chen and Xia]](https://dl.acm.org/doi/abs/10.1145/3597066.3597104). Also the slides presented at the conference are included in this repository.
 
 # Dependency
 Mathematica 12
