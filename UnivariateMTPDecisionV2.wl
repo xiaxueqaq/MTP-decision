@@ -226,7 +226,7 @@ DecideMTPNew[phi_,bv_,mtps_,x_,flag_:True]:=Module[{kn,kp,intv,tmp,i,j,l,r,sap,s
 
 
 ExtractMTP[exp_]:=Module[{},
-	If[(exp[[0]]==Implies)||(exp[[0]]==And)||(exp[[0]]==Or),Return[Join@@Table[ExtractMTP[exp[[i]]],{i,Length[exp]}]]];
+	If[(exp[[0]]==Implies)||(exp[[0]]==And)||(exp[[0]]==Or||exp[[0]]==Xor||exp[[0]]==Equivalent),Return[Join@@Table[ExtractMTP[exp[[i]]],{i,Length[exp]}]]];
 	If[(exp[[0]]==Not),Return[ExtractMTP[exp[[1]]]]];
 	Return[{exp}];
 ];
