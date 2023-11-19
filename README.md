@@ -43,8 +43,8 @@ Another example is from the National College Entrance Examination 2023 (NCEE2023
 
 **UPDATE**: You can also use `ProveMTP` now, here shows how to use `ProveMTP` to solve the same problem:
 
-`ProveMTP[ForAll[x, x^2 Cos[x] - Sin[x] && x \[Implies] -1 + x]]`, which returns `True`.
+`ProveMTP[ForAll[x, x^2 Cos[x] - Sin[x] == 0 && x > 0 \[Implies] -1 + x > 0]]`, which returns `True`.
 
-`ProveMTP[ForAll[ x, ((x > 0) \[And] (x - 1 < 0)) \[Implies] ((Sin[x] - x + x^2 > 0) \[And] (Sin[x] - x < 0))]]`, which returns `True`.
+`ProveMTP[ForAll[x, ((x > 0) \[And] (x - 1 < 0)) \[Implies] ((Sin[x] - x + x^2 > 0) \[And] (Sin[x] - x < 0))]]`, which returns `True`.
 
 The notebook `UnivariateMTPDecisionV2-Timing.nb` contains all examples in the paper.
