@@ -15,6 +15,9 @@ GetBound::usage= "GetBound takes an MTP f(x, sin x, cos x) and return k_-, k_+";
 DecideMTP::usage = "DecideMTP[\[CapitalPhi](b1,\[Ellipsis],bs),{b1,\[Ellipsis],bs},x,{f1,\[Ellipsis],fs},flag:True] decides the truth value of \[ForAll]x\[CapitalPhi] when flag=True, or the truth value of \[Exists]x\[CapitalPhi] when flag=False";
 
 
+ProveMTP::usage= "ProveMTP[\[CapitalPhi]] takes a closed formula in FOL of MTPs, and decide the truth of it";
+
+
 Begin["`Private`"];
 
 
@@ -82,7 +85,7 @@ NewMTPSFP[f_,x_]:=Module[{t,y,z,cf},If[SquareFreeQ[Numerator[MTPCanonicalForm[f,
 
 MTPRootIsolationOnBoundedInterval[f0_,x_,kn_,kp_]:=Module[{R,i,s0,ret,flag},
 	(*R=Solve[(f0== 0)&&((2*kn-1)*Pi< x<(2*kp+1)*Pi),x,Reals];*)
-	(*To avoid Sort[] cannot sort multiple roots *)
+	(*To avoid Sort[] cannot sort multple roots *)
 	R=Solve[(NewMTPSFP[f0,x]==0)&&((2*kn-1)*Pi<x<(2*kp+1)*Pi),x,Reals];
 	If[(f0/.{x-> Pi})==0,R=Join[R,Table[{x-> (2*k-1)Pi},{k,kn+1,kp}]]];
 	If[Length[R]==0,Return[{}],R=Sort[DeleteDuplicates[x/. R],#1<#2 &]];
@@ -108,9 +111,9 @@ MTPRootIsolationOnBoundedInterval[f0_,x_,kn_,kp_]:=Module[{R,i,s0,ret,flag},
 
 DecideMTP[phi_,bv_,mtps_,x_,flag_:True]:=Module[{kn,kp,intv,tmp,i,j,l,r,sap,s0},
 	{kn,kp}=GetBound[Times@@mtps,x];
-	Print[kn-1,",",kp+1];
+	PrintTemporary[kn-1,",",kp+1];
 	intv=MTPRootIsolationOnBoundedInterval[Times@@mtps,x,kn-1,kp+1];
-	Print[intv];
+	PrintTemporary[intv];
 	If[Length[intv]==0,
 		tmp={};
 		For[j=1,j<= Length[mtps],j++,
@@ -129,7 +132,7 @@ DecideMTP[phi_,bv_,mtps_,x_,flag_:True]:=Module[{kn,kp,intv,tmp,i,j,l,r,sap,s0},
 				AppendTo[tmp,(bv[[j]]-> Sign[mtps[[j]]/.{x-> (intv[[i,1]]+intv[[i,2]])/2}])]
 			]
 		];
-		Print["\[Xi]_",i,":",tmp];
+		PrintTemporary["\[Xi]_",i,":",bv/.tmp];
 		If[flag,
 			If[Not[phi/.tmp],Return[{False,intv[[i]]}]],
 			If[phi/.tmp,Return[{True,intv[[i]]}]]
@@ -154,7 +157,7 @@ DecideMTP[phi_,bv_,mtps_,x_,flag_:True]:=Module[{kn,kp,intv,tmp,i,j,l,r,sap,s0},
 		For[j=1,j<=Length[mtps],j++,
 			AppendTo[tmp,(bv[[j]]-> Sign[mtps[[j]]/.{x-> sap}])]
 		];
-		Print["(\[Xi]_",i-1,",\[Xi]_",i,"):",tmp];
+		PrintTemporary["(\[Xi]_",i-1,",\[Xi]_",i,"):",bv/.tmp];
 		If[flag,
 			If[Not[phi/.tmp],Return[{False,sap}]],
 			If[phi/.tmp,Return[{True,sap}]]
@@ -162,6 +165,30 @@ DecideMTP[phi_,bv_,mtps_,x_,flag_:True]:=Module[{kn,kp,intv,tmp,i,j,l,r,sap,s0},
 	];
 	If[flag,Return[True],Return[False]];
 ];
+
+
+ExtractMTP[exp_]:=Module[{},
+	If[(exp[[0]]==Implies)||(exp[[0]]==And)||(exp[[0]]==Or),Return[Join@@Table[ExtractMTP[exp[[i]]],{i,Length[exp]}]]];
+	If[(exp[[0]]==Not),Return[ExtractMTP[exp[[1]]]]];
+	Return[{exp}];
+];
+
+
+MTPExpressionPreprocess[exp0_]:=Module[{exp,repOps,ret,mtps,bv,var,flag},
+	exp=exp0[[2]];
+	repOps=Alternatives@@{LessEqual,GreaterEqual,Less,Greater,Equal,Unequal};
+	ret=exp/.op_[a_,b_]/;MatchQ[op,repOps]:>op[a-b,0];
+	mtps=DeleteDuplicates[ExtractMTP[(ret)/.op_[a_,0]/;MatchQ[op,repOps]:>a]];
+	bv=Array[b,Length[mtps]];
+	ret=ret/.Table[mtps[[i]]-> bv[[i]],{i,Length[mtps]}];
+	var=exp0[[1]];
+	If[exp0[[0]]==Exists,flag=False,flag=True,flag=True];
+	(*Print[ret,",",bv,",",mtps,",",var,",",flag];*)
+	Return[{ret,bv,mtps,var,flag}];
+]
+
+
+ProveMTP[formula_]:=DecideMTP@@(MTPExpressionPreprocess[formula]);
 
 
 End[];
