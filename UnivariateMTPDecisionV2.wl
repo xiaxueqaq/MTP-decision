@@ -111,6 +111,64 @@ MTPRootIsolationOnBoundedInterval[f0_,x_,kn_,kp_]:=Module[{R,i,s0,ret,flag},
 
 DecideMTP[phi_,bv_,mtps_,x_,flag_:True]:=Module[{kn,kp,intv,tmp,i,j,l,r,sap,s0},
 	{kn,kp}=GetBound[Times@@mtps,x];
+	Print[kn-1,",",kp+1];
+	intv=MTPRootIsolationOnBoundedInterval[Times@@mtps,x,kn-1,kp+1];
+	Print[intv];
+	If[Length[intv]==0,
+		tmp={};
+		For[j=1,j<= Length[mtps],j++,
+			AppendTo[tmp,(bv[[j]]-> Sign[mtps[[j]]/.{x-> 0}])]
+		];
+		If[flag,
+			If[phi/.tmp,Return[True],Return[{False,{0}}]],
+			If[phi/.tmp,Return[{True,{0}}],Return[False]]
+		]
+	];
+	For[i=1,i<= Length[intv],i++,
+		tmp={};
+		For[j=1,j<= Length[mtps],j++,
+			If[HasRootQ[mtps[[j]],x,intv[[i,1]],intv[[i,2]]],
+				AppendTo[tmp,(bv[[j]]-> 0)],
+				AppendTo[tmp,(bv[[j]]-> Sign[mtps[[j]]/.{x-> (intv[[i,1]]+intv[[i,2]])/2}])]
+			]
+		];
+		Print["\[Xi]_",i,":",bv/.tmp];
+		If[flag,
+			If[Not[phi/.tmp],Return[{False,intv[[i]]}]],
+			If[phi/.tmp,Return[{True,intv[[i]]}]]
+		]
+	];	
+	r=Join[((#[[1]]&)/@intv),{(2*kp+3)*Pi}];
+	l=Join[{(2*kn-3)*Pi},((#[[2]]&)/@intv)];
+	(*Print[l,r];*)
+	For[i=1,i<= Length[intv]+1,i++,
+		If[(\[Not]OddQ[l[[i]]/Pi])\[And](\[Not]OddQ[r[[i]]/Pi]),sap=(l[[i]]+r[[i]])/2,
+			If[OddQ[l[[i]]/Pi],
+				s0=1024;
+				sap=Ceiling[l[[i]]*s0]/s0;
+				While[sap>= r[[i]],s0=s0*8;sap=Ceiling[l[[i]]*s0]/s0]
+				,
+				s0=1024;
+				sap=Floor[r[[i]]*s0]/s0;
+				While[sap<= l[[i]],s0=s0*8;sap=Floor[r[[i]]*s0]/s0]
+			]
+		];
+		tmp={};
+		For[j=1,j<=Length[mtps],j++,
+			AppendTo[tmp,(bv[[j]]-> Sign[mtps[[j]]/.{x-> sap}])]
+		];
+		Print["(\[Xi]_",i-1,",\[Xi]_",i,"):",bv/.tmp];
+		If[flag,
+			If[Not[phi/.tmp],Return[{False,sap}]],
+			If[phi/.tmp,Return[{True,sap}]]
+		]
+	];
+	If[flag,Return[True],Return[False]];
+];
+
+
+DecideMTPNew[phi_,bv_,mtps_,x_,flag_:True]:=Module[{kn,kp,intv,tmp,i,j,l,r,sap,s0},
+	{kn,kp}=GetBound[Times@@mtps,x];
 	PrintTemporary[kn-1,",",kp+1];
 	intv=MTPRootIsolationOnBoundedInterval[Times@@mtps,x,kn-1,kp+1];
 	PrintTemporary[intv];
@@ -188,7 +246,7 @@ MTPExpressionPreprocess[exp0_]:=Module[{exp,repOps,ret,mtps,bv,var,flag},
 ]
 
 
-ProveMTP[formula_]:=DecideMTP@@(MTPExpressionPreprocess[formula]);
+ProveMTP[formula_]:=DecideMTPNew@@(MTPExpressionPreprocess[formula]);
 
 
 End[];
